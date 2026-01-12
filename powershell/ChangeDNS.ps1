@@ -5,11 +5,24 @@ If (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
     Exit
 }
 
-
 # Change-DNS.ps1
 # Run this as Administrator!
 
 $adapterName = "Ethernet"
+
+function Get-CurrentDNS {
+    try {
+        $dnsServers = Get-DnsClientServerAddress -InterfaceAlias $adapterName | Select-Object -ExpandProperty ServerAddresses
+        if ($dnsServers) {
+            Write-Host "Current DNS for ${adapterName}: $($dnsServers -join ', ')" -ForegroundColor Yellow
+        } else {
+            Write-Host "No DNS servers configured for ${adapterName}." -ForegroundColor Yellow
+        }
+    }
+    catch {
+        Write-Host "Error: Could not retrieve DNS for adapter '${adapterName}'." -ForegroundColor Red
+    }
+}
 
 function Set-DNS($servers) {
     try {
@@ -27,6 +40,9 @@ function Set-DNS($servers) {
         Write-Host "Make sure the adapter exists and run as Administrator." -ForegroundColor Yellow
     }
 }
+
+# Display current DNS
+Get-CurrentDNS
 
 # Menu
 Write-Host "Select DNS Provider for ${adapterName}:`n" -ForegroundColor Cyan
